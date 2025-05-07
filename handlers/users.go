@@ -25,8 +25,9 @@ type User struct {
 func CreateUser(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type parameters struct {
-			Password string `json:"password"`
-			Email    string `json:"email"`
+			Password        string `json:"password"`
+			Email           string `json:"email"`
+			ConfirmPassword string `json:"confirm_password"`
 		}
 		type response struct {
 			User
@@ -45,10 +46,16 @@ func CreateUser(cfg *config.ApiConfig) http.HandlerFunc {
 			utils.RespondWithError(w, http.StatusBadRequest, "Invalid Email", fmt.Errorf("invalid email"))
 			return
 		}
+		if params.Password != params.ConfirmPassword {
+			log.Printf("Passwords do not match:")
+			utils.RespondWithError(w, http.StatusBadRequest, "Passwords do not match", fmt.Errorf("passwords do not match"))
+			return
+		}
 		hashedPassword, err := auth.HashPassword(params.Password)
 		if err != nil {
 			log.Printf("failed to hash password %v", err)
 			utils.RespondWithError(w, http.StatusInternalServerError, "Something went wrong", err)
+			return
 		}
 
 		user, err := cfg.Database.CreateUser(r.Context(), database.CreateUserParams{
