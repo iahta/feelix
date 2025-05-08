@@ -27,12 +27,13 @@
       margin-top: 15px;
     }
   </style>
+  <script src="/app/static/app.js" defer></script>
 </head>
 <body>
   <div class="container">
     <h1>MyWebsiteName</h1>
 
-    <form action="/login" method="post">
+    <form id="login-box">
       <input type="email" name="email" placeholder="Email Address" required>
       <input type="password" name="password" placeholder="Password" required>
       <button type="submit">Log In</button>

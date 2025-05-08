@@ -1,8 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('signup-box').addEventListener('submit', function(e) {
+  const signupForm = document.getElementById('signup-box');
+  if (signupForm) {
+    signupForm.addEventListener('submit', function(e) {
       e.preventDefault();
       signup();
-  });
+    });
+  }
+
+  const loginForm = document.getElementById('login-box');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      login();
+    });
+  }
+});
+
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const loginVisibility = document.getElementById('login-form')
+  if (loginVisibility) {
+    const token = localStorage.getItem('token');
+    loginVisibility.style.display = token ? 'block' : 'none';
+
+  }
 });
 
 async function login() {
@@ -27,8 +49,8 @@ async function login() {
 
       if (data.token) {
           localStorage.setItem('token', data.token);
-          document.getElementById('auth-section').style.display = 'none';
-          document.getElementById('video-section').style.display = 'block';
+          window.location.href = '/app/index.html'
+          document.getElementById('login-form').style.display = 'block';
           await getVideos();
       } else {
           alert('Login failed. Please check your credentials.');
