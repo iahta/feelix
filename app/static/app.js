@@ -22,14 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loginVisibility = document.getElementById('login-form')
   if (loginVisibility) {
     const token = localStorage.getItem('token');
-    loginVisibility.style.display = token ? 'block' : 'none';
+    loginVisibility.style.display = token ? 'none' : 'block';
 
   }
 });
 
 async function login() {
   const email = document.getElementById('email').value;
-  const password = document.getElementById('password');
+  const password = document.getElementById('password').value;
 
   try {
       const res = await fetch('/api/login', {
@@ -50,8 +50,6 @@ async function login() {
       if (data.token) {
           localStorage.setItem('token', data.token);
           window.location.href = '/app/index.html'
-          document.getElementById('login-form').style.display = 'block';
-          await getVideos();
       } else {
           alert('Login failed. Please check your credentials.');
       }

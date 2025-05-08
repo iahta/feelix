@@ -88,7 +88,7 @@ func isValidEmail(email string) bool {
 func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type parameters struct {
-			Password string `json:"passwrod"`
+			Password string `json:"password"`
 			Email    string `json:"email"`
 		}
 		type response struct {
@@ -108,17 +108,17 @@ func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		}
 		if !isValidEmail(params.Email) {
 			log.Printf("Invalid email: %s", params.Email)
-			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("incorrect email or password"))
+			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("not valid email"))
 			return
 		}
 		user, err := cfg.Database.GetUserByEmail(r.Context(), params.Email)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("incorrect email or password"))
+			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("couldnt get user by email"))
 			return
 		}
 		err = auth.CheckPasswordHash(user.PasswordHash, params.Password)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("incorrect email or password"))
+			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("password hash"))
 			return
 		}
 		exp := time.Duration(3600) * time.Second
