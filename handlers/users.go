@@ -108,17 +108,17 @@ func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		}
 		if !isValidEmail(params.Email) {
 			log.Printf("Invalid email: %s", params.Email)
-			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("not valid email"))
+			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("incorrect email or password"))
 			return
 		}
 		user, err := cfg.Database.GetUserByEmail(r.Context(), params.Email)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("couldnt get user by email"))
+			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("incorrect email or password"))
 			return
 		}
 		err = auth.CheckPasswordHash(user.PasswordHash, params.Password)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("password hash"))
+			utils.RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password", fmt.Errorf("incorrect email or password"))
 			return
 		}
 		exp := time.Duration(3600) * time.Second
