@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -7,16 +7,19 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/iahta/feelix/config"
+	"github.com/iahta/feelix/utils"
 )
 
 type Movies struct {
-	ID            string `json:"id"`
-	OriginalTitle string `json:"original_title"`
-	Title         string `json:"title"`
-	Overview      string `json:"overview"`
-	ReleaseDate   string `json:"release_date"`
-	PosterPath    string `json:"poster_path"`
-	VoteAverage   string `json:"vote_average"`
+	ID            int     `json:"id"`
+	OriginalTitle string  `json:"original_title"`
+	Title         string  `json:"title"`
+	Overview      string  `json:"overview"`
+	ReleaseDate   string  `json:"release_date"`
+	PosterPath    string  `json:"poster_path"`
+	VoteAverage   float64 `json:"vote_average"`
 }
 
 type MovieID struct {
@@ -102,3 +105,29 @@ func GetMovieId(title string) (MovieID, error) {
 
 	return movieID, nil
 }
+
+func SearchMoviesHandler(cfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query().Get("q")
+		if query == "" {
+			utils.RespondWithError(w, http.StatusBadRequest, "Query parameter 'q' is required", fmt.Errorf("missing parameter"))
+			return
+		}
+		movies, err := SearchMovies(query)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "unable to search movies", err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(movies)
+	}
+}
+
+//add handler, handler will be called by javascript, after search,
+//create movie db items
+//like button
+//add movie to user
+//user profile with liked movies
+//show streaming options
+//only show streaming options and like movies when locked in

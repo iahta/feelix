@@ -86,3 +86,39 @@ async function signup() {
       alert(`Error: ${error.message}`);
   }
 }
+
+function searchMovies() {
+  const apiBase = "http://localhost:8080/api"
+  const query = document.getElementById("searchInput").value;
+  if (!query.trim()){
+    alert("Please enter a search term.")
+    return;
+  }
+
+  fetch (`${apiBase}/search?q=${encodeURIComponent(query)}`)
+  .then(res => {
+    if (!res.ok) throw new Error("API error");
+    return res.json();
+  })
+  .then(data => {
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    if (!data.length) {
+      resultsDiv.innerHTML = "<p>No results found.</p>";
+      return;
+    }
+
+    data.forEach(movie => {
+      const movieEl = document.createElement("div");
+      movieEl.className = "movie";
+      movieEl.innerHTML = `
+      <strong>${movie.original_title}</strong><br>
+      <small>${movie.release_date}</small><br>
+      ${movie.overview}<br>
+      <button onclick='likeMovie(${movie.id})'>Like</button>`;
+      resultsDiv.appendChild(movieEl);
+    });
+  })
+  .catch(err => alert("Error: " + err));
+}
