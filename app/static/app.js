@@ -1,3 +1,5 @@
+let movieCache = [];
+
 document.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('signup-box');
   if (signupForm) {
@@ -101,6 +103,7 @@ function searchMovies() {
     return res.json();
   })
   .then(data => {
+    movieCache = data; //store movies globally
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = "";
 
@@ -121,4 +124,28 @@ function searchMovies() {
     });
   })
   .catch(err => alert("Error: " + err));
+}
+
+function likeMovie(id) {
+  const movie = movieCache.find(m => m.id === id);
+  if (!movie) {
+    alert("Movie not found in cache.");
+    return;
+  }
+
+  fetch('/api/like', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify(movie)
+  })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(data => { throw new Error(data.error || "Unknown error"); });
+      }
+      alert("Movie Liked!");
+    })
+    .catch(err => alert("Error liking movie: " + err.message));
 }
