@@ -135,20 +135,58 @@ func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		_, err := cfg.Database.CreateRefreshToken(r.Context(), database. {
-			Token: refresh_token,
-			UserID: user.ID,
+		_, err = cfg.Database.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
+			Token:     refresh_token,
+			UserID:    user.ID,
 			ExpiresAt: time.Now().AddDate(0, 0, 60),
 		})
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Access Token failed", err)
+			return
+		}
 
 		utils.RespondWithJSON(w, http.StatusOK, response{
-			ID:        user.ID,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-			Email:     user.Email,
-			Token:     token,
+			ID:           user.ID,
+			CreatedAt:    user.CreatedAt,
+			UpdatedAt:    user.UpdatedAt,
+			Email:        user.Email,
+			Token:        token,
 			RefreshToken: refresh_token,
 		})
 
 	}
+}
+
+//update main go with handlers
+//refresh and revoke handler creation
+
+func RefreshHandler(cfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader, err := auth.GetBearerToken(r.Header)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials", err)
+			return
+		}
+		user, err := cfg.Database.GetUserFromRefreshToken(r.Context(), authHeader)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials", err)
+			return
+		}
+
+		exp := time.Duration(3600 * time.Second)
+		token, err := auth.MakeJWT(user.ID, cfg.JWTSecret, exp)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to create new token", err)
+			return
+		}
+
+		type response struct {
+			Token string `json:"token"`
+		}
+		utils.RespondWithJSON(w, http.StatusOK, response{
+			Token: token,
+		})
+
+	}
+
 }

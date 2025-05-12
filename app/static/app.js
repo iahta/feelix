@@ -51,6 +51,7 @@ async function login() {
 
       if (data.token) {
           localStorage.setItem('token', data.token);
+          localStorage.setItem('refresh_token', data.refresh_token);
           window.location.href = '/app/index.html'
       } else {
           alert('Login failed. Please check your credentials.');
@@ -165,7 +166,7 @@ axios.interceptors.response.use(
         // Call the refresh endpoint
         const response = await axios.post('/api/refresh', {}, {
           headers: {
-            'Authorization': `Bearer ${refreshToken}`
+            'Authorization': `Bearer ${localStorage.getItem('refresh_token')}`
           }
         });
         
