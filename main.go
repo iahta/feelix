@@ -38,6 +38,7 @@ func main() {
 	mux.HandleFunc("GET /api/search", handlers.SearchMoviesHandler(cfg))
 	mux.HandleFunc("POST /api/like", handlers.LikeMovie(cfg))
 	mux.HandleFunc("POST /api/refresh", handlers.RefreshHandler(cfg))
+	mux.HandleFunc("POST /api/revoke", handlers.RevokeHandler(cfg))
 
 	mux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")

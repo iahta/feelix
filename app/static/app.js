@@ -29,6 +29,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+document.addEventListener('DOMContentLoaded', async () => {
+  const logoutVisibility = document.getElementById('logout-box')
+  if (logoutVisibility) {
+    const token = localStorage.getItem('token');
+    logoutVisibility.style.display = token ? 'block' : 'none';
+  }
+});
+
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;

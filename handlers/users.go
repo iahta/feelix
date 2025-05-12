@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -158,7 +159,7 @@ func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 }
 
 //update main go with handlers
-//refresh and revoke handler creation
+// revoke handler creation
 
 func RefreshHandler(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -179,7 +180,6 @@ func RefreshHandler(cfg *config.ApiConfig) http.HandlerFunc {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to create new token", err)
 			return
 		}
-
 		type response struct {
 			Token string `json:"token"`
 		}
@@ -189,4 +189,32 @@ func RefreshHandler(cfg *config.ApiConfig) http.HandlerFunc {
 
 	}
 
+}
+
+func RevokeHandler(cfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader, err := auth.GetBearerToken(r.Header)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials", err)
+			return
+		}
+		_, err = cfg.Database.GetUserFromRefreshToken(r.Context(), authHeader)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials", err)
+			return
+		}
+		err = cfg.Database.UpdateRefreshToken(r.Context(), database.UpdateRefreshTokenParams{
+			UpdatedAt: time.Now(),
+			RevokedAt: sql.NullTime{
+				Time:  time.Now(),
+				Valid: true,
+			},
+			Token: authHeader,
+		})
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to revoke refresh token", err)
+			return
+		}
+		utils.RespondWithJSON(w, http.StatusNoContent, nil)
+	}
 }
