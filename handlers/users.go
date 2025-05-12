@@ -92,11 +92,12 @@ func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 			Email    string `json:"email"`
 		}
 		type response struct {
-			ID        uuid.UUID `json:"id"`
-			CreatedAt time.Time `json:"created_at"`
-			UpdatedAt time.Time `json:"updated_at"`
-			Email     string    `json:"email"`
-			Token     string    `json:"token"`
+			ID           uuid.UUID `json:"id"`
+			CreatedAt    time.Time `json:"created_at"`
+			UpdatedAt    time.Time `json:"updated_at"`
+			Email        string    `json:"email"`
+			Token        string    `json:"token"`
+			RefreshToken string    `json:"refresh_token"`
 		}
 		decoder := json.NewDecoder(r.Body)
 		params := parameters{}
@@ -124,15 +125,29 @@ func LoginHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		exp := time.Duration(3600) * time.Second
 		token, err := auth.MakeJWT(user.ID, cfg.JWTSecret, exp)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, "Couldn't create authentication token", err)
+			utils.RespondWithError(w, http.StatusInternalServerError, "Access Token failed", err)
 			return
 		}
+
+		refresh_token, err := auth.MakeRefreshToken()
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Access Token failed", err)
+			return
+		}
+
+		_, err := cfg.Database.CreateRefreshToken(r.Context(), database. {
+			Token: refresh_token,
+			UserID: user.ID,
+			ExpiresAt: time.Now().AddDate(0, 0, 60),
+		})
+
 		utils.RespondWithJSON(w, http.StatusOK, response{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 			Email:     user.Email,
 			Token:     token,
+			RefreshToken: refresh_token,
 		})
 
 	}

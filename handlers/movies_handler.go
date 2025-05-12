@@ -9,6 +9,8 @@ import (
 	"os"
 
 	"github.com/iahta/feelix/config"
+	"github.com/iahta/feelix/internal/auth"
+	"github.com/iahta/feelix/internal/database"
 	"github.com/iahta/feelix/utils"
 )
 
@@ -25,7 +27,7 @@ type Movies struct {
 type MovieID struct {
 	Title string `json:"title"`
 	Imdb  string `json:"imdb"`
-	Tmdb  string `json:"tmdb"`
+	Tmdb  int    `json:"tmdb"`
 }
 
 type APIResponse struct {
@@ -96,14 +98,13 @@ func GetMovieId(title string) (MovieID, error) {
 		body, _ := io.ReadAll(res.Body)
 		return MovieID{}, fmt.Errorf("API Error: %s - %s", res.Status, body)
 	}
-
-	movieID := MovieID{}
-	err = json.NewDecoder(res.Body).Decode(&movieID)
+	var ids []MovieID
+	err = json.NewDecoder(res.Body).Decode(&ids)
 	if err != nil {
 		return MovieID{}, err
 	}
 
-	return movieID, nil
+	return ids[0], nil
 }
 
 func SearchMoviesHandler(cfg *config.ApiConfig) http.HandlerFunc {
@@ -123,6 +124,52 @@ func SearchMoviesHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		json.NewEncoder(w).Encode(movies)
 	}
 }
+
+func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var movie Movies
+
+		authHeader, err := auth.GetBearerToken(r.Header)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Missing Authorization", err)
+			return
+		}
+		userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+			return
+		}
+		err = json.NewDecoder(r.Body).Decode(&movie)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid JSON Body", err)
+			return
+		}
+		movieImdb, err := GetMovieId(movie.OriginalTitle)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to retrieve ID", err)
+			return
+		}
+		_, err = cfg.Database.LikedMovie(r.Context(), database.LikedMovieParams{
+			MovieID:       int32(movie.ID),
+			OriginalTitle: movie.OriginalTitle,
+			Title:         movie.Title,
+			Overview:      movie.Overview,
+			ReleaseDate:   movie.ReleaseDate,
+			PosterPath:    movie.PosterPath,
+			VoteAverage:   movie.VoteAverage,
+			Imdb:          movieImdb.Imdb,
+			Tmdb:          int32(movieImdb.Tmdb),
+			UserID:        userID,
+		})
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to save movie", err)
+			return
+		}
+
+	}
+}
+
+//make refresh tokens
 
 //add handler, handler will be called by javascript, after search,
 //create movie db items

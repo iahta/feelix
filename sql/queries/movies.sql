@@ -8,7 +8,7 @@ VALUES (
     $3,
     $4,
     $5,
-    %6,
+    $6,
     $7,
     $8,
     $9,
@@ -20,7 +20,7 @@ RETURNING *;
 SELECT id, created_at, movie_id, original_title, title, overview, release_date, poster_path, vote_average, imdb, tmdb, user_id FROM movies
 WHERE original_title = $1;
 
--- name: UnlikeMovie :one
+-- name: UnlikeMovie :exec
 DELETE FROM movies
 WHERE id = $1;
 

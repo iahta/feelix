@@ -10,6 +10,21 @@ import (
 	"github.com/google/uuid"
 )
 
+type Movie struct {
+	ID            uuid.UUID
+	CreatedAt     time.Time
+	MovieID       int32
+	OriginalTitle string
+	Title         string
+	Overview      string
+	ReleaseDate   string
+	PosterPath    string
+	VoteAverage   float64
+	Imdb          string
+	Tmdb          int32
+	UserID        uuid.UUID
+}
+
 type User struct {
 	ID           uuid.UUID
 	CreatedAt    time.Time

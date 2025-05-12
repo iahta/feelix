@@ -149,3 +149,41 @@ function likeMovie(id) {
     })
     .catch(err => alert("Error liking movie: " + err.message));
 }
+
+//refresh handler, javascript, when 401 calls
+// Set up an interceptor to handle 401 responses
+axios.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    
+    // If it's a 401 and we haven't tried refreshing yet
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Call the refresh endpoint
+        const response = await axios.post('/api/refresh', {}, {
+          headers: {
+            'Authorization': `Bearer ${refreshToken}`
+          }
+        });
+        
+        // Update the stored JWT
+        const newToken = response.data.token;
+        localStorage.setItem('token', newToken);
+        
+        // Retry the original request with the new token
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return axios(originalRequest);
+      } catch (refreshError) {
+        // If refresh fails, redirect to login
+        //need to add acutal login location
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
