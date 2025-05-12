@@ -215,6 +215,6 @@ func RevokeHandler(cfg *config.ApiConfig) http.HandlerFunc {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to revoke refresh token", err)
 			return
 		}
-		utils.RespondWithJSON(w, http.StatusNoContent, nil)
+		w.WriteHeader(http.StatusNoContent)
 	}
 }

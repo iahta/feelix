@@ -1,6 +1,6 @@
 <html>
   <head>
-    <script src="/app/static/app.js" defer></script>
+    <script type="module" src="/app/static/app.js" defer></script>
   </head>
   <body>
     <h1>Welcome to Feelix</h1>
@@ -8,12 +8,12 @@
       <h2>This is where you will login</h2>
     </form>
     <form id="logout-box">
-      <button onclick="logout()">Logout</button>
+      <button id="logout-button" type="button">Logout</button>
     </form>
     <h1>Search Movies</h1>
 
     <input type="text" id="searchInput" placeholder="e.g. sad movie">
-    <button onclick="searchMovies()">Search</button>
+    <button id="search-button" type="button">Search</button>
 
     <h2>Results</h2>
     <div id="results"></div>

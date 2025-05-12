@@ -1,3 +1,5 @@
+import axios from 'https://cdn.skypack.dev/axios';
+
 let movieCache = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -26,6 +28,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     loginVisibility.style.display = token ? 'none' : 'block';
 
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutButton = document.getElementById('logout-button');
+  if (logoutButton) {
+    logoutButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      logout();
+    });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const searchButton = document.getElementById('search-button');
+  if (searchButton) {
+    searchButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      searchMovies();
+    });
   }
 });
 
@@ -196,3 +218,29 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+async function logout() {
+  try {
+      const res = await fetch('/api/revoke', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('refresh_token')}`
+          },
+      });
+      if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || 'Failed to logout');
+      }
+      localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
+      window.location.href = '/app/index.html'
+      
+  } catch (error) {
+      alert(`Error: ${error.message}`);
+  }
+}
+
+//logout function
+//revoke api/send refresh token in api header
+//remove tokens from local storage
