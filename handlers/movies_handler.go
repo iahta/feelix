@@ -169,6 +169,28 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 	}
 }
 
+func GetLikedMovies(cfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader, err := auth.GetBearerToken(r.Header)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Missing Authorization", err)
+			return
+		}
+		userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+			return
+		}
+		movies, err := cfg.Database.RetrieveMoviesByUser(r.Context(), userID)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to retrieve liked movies", err)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(movies)
+	}
+}
+
 //make refresh tokens
 
 //add handler, handler will be called by javascript, after search,

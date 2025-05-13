@@ -218,3 +218,19 @@ func RevokeHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+
+//user page
+//user needs token to access
+//user page pulls all likes, can unlike - like function needs to check for same movie.
+//user page has spot to update email or password
+/*
+GET /api/user/profile → returns account info & liked movies
+
+PUT /api/user → updates user account info (email, password, etc.)
+
+GET /api/user/likes → liked movies (or include in profile)
+
+POST /api/like → like a movie
+
+DELETE /api/like/{movieId} → unlike a movie
+*/

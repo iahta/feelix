@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Profile</title>
+  <script type="module" src="/app/static/app.js"></script>
+</head>
+<body>
+  <h1>User Profile</h1>
+
+  <section id="account-info">
+    <h2>Account Information</h2>
+    <form id="update-form">
+      <label>Email: <input type="email" id="email" /></label><br />
+      <label>New Password: <input type="password" id="password" /></label><br />
+      <label>Confirm Password: <input type="password" id="confirm_password" /></label><br />
+      <button type="submit">Update Info</button>
+    </form>
+  </section>
+
+  <section id="liked-movies">
+    <h2>Liked Movies</h2>
+    <div id="movies-container">Loading...</div>
+  </section>
+
+  <button id="logout-button">Logout</button>
+</body>
+</html>

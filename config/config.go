@@ -12,16 +12,21 @@ import (
 type ApiConfig struct {
 	Database  *database.Queries
 	JWTSecret string
+	Platform  string
 }
 
 func NewApiConfig() (*ApiConfig, error) {
 	dbURL := os.Getenv("DB_URL")
 	JWT_Secret := os.Getenv("JWT_SECRET")
+	Platform := os.Getenv("PLATFORM")
 	if dbURL == "" {
 		return nil, fmt.Errorf("error retrieving database")
 	}
 	if JWT_Secret == "" {
 		return nil, fmt.Errorf("JWT_SECRET must be set")
+	}
+	if Platform == "" {
+		return nil, fmt.Errorf("Platform must be set")
 	}
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
@@ -32,5 +37,6 @@ func NewApiConfig() (*ApiConfig, error) {
 	return &ApiConfig{
 		Database:  dbQueries,
 		JWTSecret: JWT_Secret,
+		Platform:  Platform,
 	}, nil
 }

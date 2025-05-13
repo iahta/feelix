@@ -20,7 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-
+document.addEventListener('DOMContentLoaded', () => {
+  const moviesSection = document.getElementById('movies-container');
+  if (moviesSection) {
+    loadLikedMovies();
+  }
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   const loginVisibility = document.getElementById('login-form')
@@ -241,6 +246,48 @@ async function logout() {
   }
 }
 
-//logout function
-//revoke api/send refresh token in api header
-//remove tokens from local storage
+async function loadLikedMovies() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('You must be logged in to view liked movies.');
+    window.location.href = '/app/login.html';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/user/likes', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to load liked movies');
+    }
+
+    const likedMovies = await res.json();
+    const container = document.getElementById('movies-container');
+    container.innerHTML = '';
+
+    if (likedMovies.length === 0) {
+      container.innerHTML = '<p>You have no liked movies yet.</p>';
+      return;
+    }
+
+    likedMovies.forEach(movie => {
+      const movieDiv = document.createElement('div');
+      movieDiv.className = 'liked-movie';
+      movieDiv.innerHTML = `
+        <h3>${movie.Title}</h3>
+        <p>${movie.Overview}</p>
+        <small>Released: ${movie.ReleaseDate}</small>
+        <button onclick="unlikeMovie(${movie.ID})">Unlike</button>`;
+        container.appendChild(movieDiv);
+    });
+  } catch (err) {
+    console.error(err);
+    document.getElementById('movies-container').innerText = 'Could not retrieve liked movies.';
+  }
+}
