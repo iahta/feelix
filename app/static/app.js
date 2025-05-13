@@ -126,14 +126,23 @@ async function signup() {
 }
 
 function searchMovies() {
-  const apiBase = "http://localhost:8080/api"
   const query = document.getElementById("searchInput").value;
+  const token = localStorage.getItem('token');
   if (!query.trim()){
     alert("Please enter a search term.")
     return;
   }
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
-  fetch (`${apiBase}/search?q=${encodeURIComponent(query)}`)
+  fetch (`/api/search?q=${encodeURIComponent(query)}`,{
+    method: 'GET',
+    headers: headers
+  })
   .then(res => {
     if (!res.ok) throw new Error("API error");
     return res.json();
@@ -151,16 +160,25 @@ function searchMovies() {
     data.forEach(movie => {
       const movieEl = document.createElement("div");
       movieEl.className = "movie";
-      movieEl.innerHTML = `
-      <strong>${movie.original_title}</strong><br>
-      <small>${movie.release_date}</small><br>
-      ${movie.overview}<br>
-      <button onclick='likeMovie(${movie.id})'>Like</button>`;
+      if (movie.liked) {
+        movieEl.innerHTML = `
+        <strong>${movie.original_title}</strong><br>
+        <small>${movie.release_date}</small><br>
+        ${movie.overview}<br>
+        <button onclick='unlikeMovie(${movie.id})'>Unlike</button>`;
+      } else {
+        movieEl.innerHTML = `
+        <strong>${movie.original_title}</strong><br>
+        <small>${movie.release_date}</small><br>
+        ${movie.overview}<br>
+        <button onclick='likeMovie(${movie.id})'>Like</button>`;
+      }  
       resultsDiv.appendChild(movieEl);
     });
   })
   .catch(err => alert("Error: " + err));
 }
+
 
 function likeMovie(id) {
   const movie = movieCache.find(m => m.id === id);

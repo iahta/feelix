@@ -22,6 +22,7 @@ type Movies struct {
 	ReleaseDate   string  `json:"release_date"`
 	PosterPath    string  `json:"poster_path"`
 	VoteAverage   float64 `json:"vote_average"`
+	Liked         bool    `json:"liked"`
 }
 
 type MovieID struct {
@@ -114,10 +115,31 @@ func SearchMoviesHandler(cfg *config.ApiConfig) http.HandlerFunc {
 			utils.RespondWithError(w, http.StatusBadRequest, "Query parameter 'q' is required", fmt.Errorf("missing parameter"))
 			return
 		}
+
 		movies, err := SearchMovies(query)
 		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, "unable to search movies", err)
 			return
+		}
+		authHeader, err := auth.GetBearerToken(r.Header)
+		if err == nil {
+			userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
+			if err != nil {
+				utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+				return
+			}
+			likedMovies, err := cfg.Database.RetrieveMoviesByUser(r.Context(), userID)
+			if err != nil {
+				utils.RespondWithError(w, http.StatusInternalServerError, "Error returning liked movies", err)
+				return
+			}
+			for i, movie := range movies {
+				for _, likedMovie := range likedMovies {
+					if movie.ID == int(likedMovie.MovieID) {
+						movies[i].Liked = true
+					}
+				}
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/json")
