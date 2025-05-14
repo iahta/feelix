@@ -128,10 +128,12 @@ async function signup() {
 function searchMovies() {
   const query = document.getElementById("searchInput").value;
   const token = localStorage.getItem('token');
+
   if (!query.trim()){
     alert("Please enter a search term.")
     return;
   }
+
   const headers = {
     'Content-Type': 'application/json'
   };
@@ -139,7 +141,7 @@ function searchMovies() {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  fetch (`/api/search?q=${encodeURIComponent(query)}`,{
+  fetch (`/api/search?q=${encodeURIComponent(query)}`, {
     method: 'GET',
     headers: headers
   })
@@ -160,27 +162,55 @@ function searchMovies() {
     data.forEach(movie => {
       const movieEl = document.createElement("div");
       movieEl.className = "movie";
+
       if (movie.liked) {
         movieEl.innerHTML = `
         <strong>${movie.original_title}</strong><br>
         <small>${movie.release_date}</small><br>
         ${movie.overview}<br>
-        <button onclick='unlikeMovie(${movie.id})'>Unlike</button>`;
+        <button class="unlike-btn" id="unlike-button" data-movie-id='${movie.id}'>Unlike</button>
+        <div id="like-msg-${movie.id}" class="like-message" style="color: red"></div>`;
       } else {
         movieEl.innerHTML = `
         <strong>${movie.original_title}</strong><br>
         <small>${movie.release_date}</small><br>
         ${movie.overview}<br>
-        <button onclick='likeMovie(${movie.id})'>Like</button>`;
-      }  
+        <button class="like-btn" id="like-button" data-movie-id='${movie.id}'>Like</button>
+        <div id="like-msg-${movie.id}" class="like-message" style="color: red"></div>`;
+      }
+
       resultsDiv.appendChild(movieEl);
     });
+
+    document.querySelectorAll('.like-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const movieID = button.dataset.movieId;
+        likeMovie(movieID);
+      });
+    });
+
+    document.querySelectorAll('.unlike-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const movieID = button.dataset.movieId;
+        unlikeMovie(movieID);
+      });
+    });
   })
-  .catch(err => alert("Error: " + err));
+  .catch(err => alert("Error: " + err.message));
 }
 
 
 function likeMovie(id) {
+  const token = localStorage.getItem('token');
+  const messageDiv = document.getElementById(`like-msg-${id}`);
+  if (!token) {
+    if (messageDiv) {
+      messageDiv.innerText = "Please log in or sign up to like a movie.";
+    } else {
+      alert("Please log in or sign up to like a movie.");
+    }
+    return;
+  }
   const movie = movieCache.find(m => m.id === id);
   if (!movie) {
     alert("Movie not found in cache.");
