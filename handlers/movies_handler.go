@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 
 	"github.com/iahta/feelix/config"
 	"github.com/iahta/feelix/internal/auth"
@@ -195,7 +194,7 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 func UnlikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type response struct {
-			ID string `json:"id"`
+			ID int `json:"id"`
 		}
 		authHeader, err := auth.GetBearerToken(r.Header)
 		if err != nil {
@@ -207,19 +206,18 @@ func UnlikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
 			return
 		}
+		if r.Body == nil {
+			http.Error(w, "Empty body", http.StatusBadRequest)
+			return
+		}
 		moviePayload := response{}
 		if err := json.NewDecoder(r.Body).Decode(&moviePayload); err != nil {
 			utils.RespondWithError(w, http.StatusBadRequest, "Invalid JSON Body", err)
 			return
 		}
-		movieID, err := strconv.Atoi(moviePayload.ID)
-		if err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to convert json body", err)
-			return
-		}
 
 		err = cfg.Database.UnlikeMovie(r.Context(), database.UnlikeMovieParams{
-			MovieID: int32(movieID),
+			MovieID: int32(moviePayload.ID),
 			UserID:  userID,
 		})
 		if err != nil {

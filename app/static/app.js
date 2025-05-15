@@ -159,42 +159,9 @@ function searchMovies() {
       return;
     }
 
-    data.forEach(movie => {
-      const movieEl = document.createElement("div");
-      movieEl.className = "movie";
+    data.forEach(renderMovie);
 
-      if (movie.liked) {
-        movieEl.innerHTML = `
-        <strong>${movie.original_title}</strong><br>
-        <small>${movie.release_date}</small><br>
-        ${movie.overview}<br>
-        <button class="unlike-btn" id="unlike-button" data-movie-id='${movie.id}'>Unlike</button>
-        <div id="like-msg-${movie.id}" class="like-message" style="color: red"></div>`;
-      } else {
-        movieEl.innerHTML = `
-        <strong>${movie.original_title}</strong><br>
-        <small>${movie.release_date}</small><br>
-        ${movie.overview}<br>
-        <button class="like-btn" id="like-button" data-movie-id='${movie.id}'>Like</button>
-        <div id="like-msg-${movie.id}" class="like-message" style="color: red"></div>`;
-      }
-
-      resultsDiv.appendChild(movieEl);
-    });
-
-    document.querySelectorAll('.like-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const movieID = button.dataset.movieId;
-        likeMovie(movieID);
-      });
-    });
-
-    document.querySelectorAll('.unlike-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const movieID = button.dataset.movieId;
-        unlikeMovie(movieID);
-      });
-    });
+    bindLikeButtons();
   })
   .catch(err => alert("Error: " + err.message));
 }
@@ -207,7 +174,7 @@ async function unlikeMovie(id) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify({ id: id })
+      body: JSON.stringify({ id: parseInt(id, 10) })
     });
     if (!res.ok) {
       const errorText = await res.text();
@@ -216,6 +183,7 @@ async function unlikeMovie(id) {
   } catch (error) {
       alert(`Error: ${error.message}`);
   }
+  alert("Movie Unliked!");
 }
 
 
@@ -233,7 +201,8 @@ function likeMovie(id) {
     }
     return;
   }
-  const movie = movieCache.find(m => m.id === id);
+
+  const movie = movieCache.find(m => m.id === parseInt(id, 10));
   if (!movie) {
     alert("Movie not found in cache.");
     return;
@@ -348,25 +317,56 @@ async function loadLikedMovies() {
     }
 
     likedMovies.forEach(movie => {
-      const movieDiv = document.createElement('div');
-      movieDiv.className = 'liked-movie';
-      movieDiv.innerHTML = `
-        <h3>${movie.Title}</h3>
-        <p>${movie.Overview}</p>
-        <small>Released: ${movie.ReleaseDate}</small>
-        <button class="unlike-btn" data-movie-id="${movie.MovieID}">Unlike</button>`;
-        container.appendChild(movieDiv);
+      const normalized = {
+        id: movie.MovieID,
+        title: movie.Title,
+        overview: movie.Overview,
+        release_date: movie.ReleaseDate,
+        liked: true
+      };
+      renderMovie(normalized)
     });
-    document.querySelectorAll('.unlike-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const movieID = button.dataset.movieId;
-        unlikeMovie(movieID);
-      });
-    });
+
+    bindLikeButtons();
+
   } catch (err) {
     console.error(err);
     document.getElementById('movies-container').innerText = 'Could not retrieve liked movies.';
   }
+}
+
+function renderMovie(movie) {
+  const container = document.getElementById('movies-container') || document.getElementById('results');
+  const movieEl = document.createElement('div');
+  movieEl.className = 'movie';
+
+  movieEl.innerHTML = `
+  <strong>${movie.title || movie.original_title}</strong><br>
+  <small>${movie.release_date}</small><br>
+  ${movie.overview}<br>
+  <button class="${movie.liked ? 'unlike-btn' : 'like-btn'}" data-movie-id="${movie.id}">
+  ${movie.liked ? 'Unlike' : 'Like'}
+  </button>
+  <div id="like-msg-${movie.id}" class="like-message" style="color: red"></div>`;
+
+  container.appendChild(movieEl);
+}
+
+function bindLikeButtons() {
+  document.querySelectorAll('.like-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const movieID = parseInt(button.dataset.movieId, 10);
+      likeMovie(movieID);
+    });
+  });
+
+  document.querySelectorAll('.unlike-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const movieID = parseInt(button.dataset.movieId, 10);
+      unlikeMovie(movieID);
+    });
+  });
+  
 }
 
 //update movie id table and struct, build new db, 
