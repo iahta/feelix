@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/iahta/feelix/config"
 	"github.com/iahta/feelix/internal/auth"
@@ -188,6 +189,44 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 			return
 		}
 
+	}
+}
+
+func UnlikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type response struct {
+			ID string `json:"id"`
+		}
+		authHeader, err := auth.GetBearerToken(r.Header)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusUnauthorized, "Missing Authorization", err)
+			return
+		}
+		userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+			return
+		}
+		moviePayload := response{}
+		if err := json.NewDecoder(r.Body).Decode(&moviePayload); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Invalid JSON Body", err)
+			return
+		}
+		movieID, err := strconv.Atoi(moviePayload.ID)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Failed to convert json body", err)
+			return
+		}
+
+		err = cfg.Database.UnlikeMovie(r.Context(), database.UnlikeMovieParams{
+			MovieID: int32(movieID),
+			UserID:  userID,
+		})
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to unlike movie", err)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 

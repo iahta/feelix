@@ -199,6 +199,25 @@ function searchMovies() {
   .catch(err => alert("Error: " + err.message));
 }
 
+async function unlikeMovie(id) {
+  try {
+    const res = await fetch ('/api/unlike', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ id: id })
+    });
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || 'Failed to unlike movie');
+    }
+  } catch (error) {
+      alert(`Error: ${error.message}`);
+  }
+}
+
 
 function likeMovie(id) {
   const token = localStorage.getItem('token');
@@ -206,6 +225,9 @@ function likeMovie(id) {
   if (!token) {
     if (messageDiv) {
       messageDiv.innerText = "Please log in or sign up to like a movie.";
+      setTimeout(() => {
+        messageDiv.innerText = "";
+      }, 3000);
     } else {
       alert("Please log in or sign up to like a movie.");
     }
@@ -294,6 +316,7 @@ async function logout() {
   }
 }
 
+//need to change html, add event listner
 async function loadLikedMovies() {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -331,11 +354,24 @@ async function loadLikedMovies() {
         <h3>${movie.Title}</h3>
         <p>${movie.Overview}</p>
         <small>Released: ${movie.ReleaseDate}</small>
-        <button onclick="unlikeMovie(${movie.ID})">Unlike</button>`;
+        <button class="unlike-btn" data-movie-id="${movie.MovieID}">Unlike</button>`;
         container.appendChild(movieDiv);
+    });
+    document.querySelectorAll('.unlike-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const movieID = button.dataset.movieId;
+        unlikeMovie(movieID);
+      });
     });
   } catch (err) {
     console.error(err);
     document.getElementById('movies-container').innerText = 'Could not retrieve liked movies.';
   }
 }
+
+//update movie id table and struct, build new db, 
+// make id in database unique, get rid of uuid. 
+//then can send id easily. 
+//check for liked
+//send package back with liked = false, button change on home end
+//no liked =

@@ -143,10 +143,15 @@ func (q *Queries) RetrieveMoviesByUser(ctx context.Context, userID uuid.UUID) ([
 
 const unlikeMovie = `-- name: UnlikeMovie :exec
 DELETE FROM movies
-WHERE id = $1
+WHERE movie_id = $1 AND user_id = $2
 `
 
-func (q *Queries) UnlikeMovie(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, unlikeMovie, id)
+type UnlikeMovieParams struct {
+	MovieID int32
+	UserID  uuid.UUID
+}
+
+func (q *Queries) UnlikeMovie(ctx context.Context, arg UnlikeMovieParams) error {
+	_, err := q.db.ExecContext(ctx, unlikeMovie, arg.MovieID, arg.UserID)
 	return err
 }

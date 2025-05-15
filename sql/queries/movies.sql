@@ -22,7 +22,7 @@ WHERE original_title = $1;
 
 -- name: UnlikeMovie :exec
 DELETE FROM movies
-WHERE id = $1;
+WHERE movie_id = $1 AND user_id = $2;
 
 -- name: RetrieveMoviesByUser :many
 SELECT id, created_at, movie_id, original_title, title, overview, release_date, poster_path, vote_average, imdb, tmdb, user_id FROM movies
