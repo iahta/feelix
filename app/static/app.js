@@ -30,9 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', async () => {
   const loginVisibility = document.getElementById('login-form')
   if (loginVisibility) {
+    loginVisibility.addEventListener('submit', function(e) {
+      e.preventDefault();
+      login();
+    });
     const token = localStorage.getItem('token');
     loginVisibility.style.display = token ? 'none' : 'block';
-
   }
 });
 
