@@ -180,12 +180,27 @@ async function unlikeMovie(id) {
       const errorText = await res.text();
       throw new Error(errorText || 'Failed to unlike movie');
     }
+    const btn = document.querySelector(`button[data-movie-id="${id}"]`);
+    const messageDiv = document.getElementById(`like-msg-${id}`);
+      if (btn) {
+        btn.innerText = "Like";
+        btn.classList.remove("unlike-btn");
+        btn.classList.add("like-btn");
+        btn.replaceWith(btn.cloneNode(true));
+        bindLikeButtons();
+      }
+      if (messageDiv) {
+        messageDiv.innerText = "Unliked!";
+        setTimeout(() => messageDiv.innerText = "", 2000);
+      }
   } catch (error) {
       alert(`Error: ${error.message}`);
   }
-  alert("Movie Unliked!");
 }
 
+//change the button to "unlike"
+//update its class
+//rebind the event
 
 function likeMovie(id) {
   const token = localStorage.getItem('token');
@@ -220,7 +235,19 @@ function likeMovie(id) {
       if (!res.ok) {
         return res.json().then(data => { throw new Error(data.error || "Unknown error"); });
       }
-      alert("Movie Liked!");
+      const btn = document.querySelector(`button[data-movie-id="${id}"]`);
+      const messageDiv = document.getElementById(`like-msg-${id}`);
+      if (btn) {
+        btn.innerText = "Unlike";
+        btn.classList.remove("like-btn");
+        btn.classList.add("unlike-btn");
+        btn.replaceWith(btn.cloneNode(true));
+        bindLikeButtons();
+      }
+      if (messageDiv) {
+        messageDiv.innerText = "Liked!";
+        setTimeout(() => messageDiv.innerText = "", 2000);
+      }
     })
     .catch(err => alert("Error liking movie: " + err.message));
 }
@@ -285,7 +312,6 @@ async function logout() {
   }
 }
 
-//need to change html, add event listner
 async function loadLikedMovies() {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -316,16 +342,15 @@ async function loadLikedMovies() {
       return;
     }
 
-    likedMovies.forEach(movie => {
-      const normalized = {
+    movieCache = likedMovies.map(movie => ({
         id: movie.MovieID,
+        original_title: movie.OriginalTitle,
         title: movie.Title,
         overview: movie.Overview,
         release_date: movie.ReleaseDate,
         liked: true
-      };
-      renderMovie(normalized)
-    });
+    }));
+    movieCache.forEach(renderMovie)
 
     bindLikeButtons();
 
@@ -369,9 +394,4 @@ function bindLikeButtons() {
   
 }
 
-//update movie id table and struct, build new db, 
-// make id in database unique, get rid of uuid. 
-//then can send id easily. 
-//check for liked
-//send package back with liked = false, button change on home end
-//no liked =
+
