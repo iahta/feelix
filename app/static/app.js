@@ -30,9 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', async () => {
   const loginVisibility = document.getElementById('login-form')
   if (loginVisibility) {
+    document.getElementById('login-btn').addEventListener('click', () => {
+      actionType - 'login';
+    });
+    document.getElementById('signup-btn').addEventListener('click', () => {
+      actionType - 'signup';
+    });
+
     loginVisibility.addEventListener('submit', function(e) {
       e.preventDefault();
-      login();
+      if (actionType === 'signup') {
+        signup();//middle function or change singup depending on where your coming from. 
+      } else {
+        login();
+      }
     });
     const token = localStorage.getItem('token');
     loginVisibility.style.display = token ? 'none' : 'block';
@@ -70,6 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
+  const messageDiv = document.getElementById("login-msg")
 
   try {
       const res = await fetch('/api/login', {
@@ -84,7 +96,7 @@ async function login() {
       });
       const data = await res.json();
       if (!res.ok) {
-          throw new Error(`Failed to login: ${data.error}`);
+          throw new Error(`${data.error}`);
       }
 
       if (data.token) {
@@ -92,10 +104,16 @@ async function login() {
           localStorage.setItem('refresh_token', data.refresh_token);
           window.location.href = '/app/index.html'
       } else {
-          alert('Login failed. Please check your credentials.');
+          if (messageDiv) {
+            messageDiv.innerText = "Login failed! Please check your credentials.";
+            setTimeout(() => messageDiv.innerText = "", 2000);
+          }
       }
   } catch (error) {
-      alert(`Error: ${error.message}`);
+      if (messageDiv) {
+        messageDiv.innerText = `Login failed! ${error.message}`;
+        setTimeout(() => messageDiv.innerText = "", 2000);
+      }   
   }
 }
 
