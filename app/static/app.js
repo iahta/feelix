@@ -173,6 +173,8 @@ function searchMovies() {
     return;
   }
 
+  applyMoodTheme(query);
+
   const headers = {
     'Content-Type': 'application/json'
   };
@@ -433,4 +435,18 @@ function bindLikeButtons() {
   
 }
 
+function applyMoodTheme(query) {
+  const mood = getMoodFromQuery(query);
+
+  document.body.className = '';
+  document.body.classList.add(`theme-${mood}`);
+}
+
+function getMoodFromQuery(query) {
+  if (query.includes('sad')) return 'sad';
+  if (query.includes('happy')) return 'happy';
+  if (query.includes('angry')) return 'angry';
+  if (query.includes('calm') || query.includes('peace')) return 'calm';
+  return 'default';
+}
 

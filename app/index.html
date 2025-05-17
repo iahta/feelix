@@ -1,6 +1,7 @@
 <html>
   <head>
     <script type="module" src="/app/static/app.js" defer></script>
+    <link rel="stylesheet" href="/app/static/styles.css">
   </head>
   <body>
     <h1>Welcome to Feelix</h1>
@@ -16,8 +17,10 @@
     </form>
     <h1>Search Movies</h1>
 
+    <form id="search-box">
     <input type="text" id="searchInput" placeholder="e.g. sad movie">
     <button id="search-button" type="button">Search</button>
+    </form>
 
     <h2>Results</h2>
     <div id="results"></div>
