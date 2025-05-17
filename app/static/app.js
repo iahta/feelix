@@ -94,6 +94,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('bg');
+  if (canvas) {
+    function resizeCanvasToFullScreen(canvas) {
+      canvas.widht = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    resizeCanvasToFullScreen(canvas);
+    window.addEventListener('resize', () => resizeCanvasToFullScreen(canvas));
+  }
+})
+
+
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -173,8 +187,6 @@ function searchMovies() {
     return;
   }
 
-  applyMoodTheme(query);
-
   const headers = {
     'Content-Type': 'application/json'
   };
@@ -203,6 +215,8 @@ function searchMovies() {
     data.forEach(renderMovie);
 
     bindLikeButtons();
+
+    applyMoodTheme(query);
   })
   .catch(err => alert("Error: " + err.message));
 }
@@ -238,10 +252,6 @@ async function unlikeMovie(id) {
       alert(`Error: ${error.message}`);
   }
 }
-
-//change the button to "unlike"
-//update its class
-//rebind the event
 
 function likeMovie(id) {
   const token = localStorage.getItem('token');
@@ -435,11 +445,21 @@ function bindLikeButtons() {
   
 }
 
+let animationLoop;
+
 function applyMoodTheme(query) {
+  const canvas = document.getElementById('bg');
+  const ctx = canvas.getContext('2d');
   const mood = getMoodFromQuery(query);
 
-  document.body.className = '';
-  document.body.classList.add(`theme-${mood}`);
+  cancelAnimationFrame(animationLoop);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  switch (mood) {
+    case 'sad': animateRain(ctx, canvas); break;
+    default: break;
+  }
+
 }
 
 function getMoodFromQuery(query) {
@@ -449,4 +469,46 @@ function getMoodFromQuery(query) {
   if (query.includes('calm') || query.includes('peace')) return 'calm';
   return 'default';
 }
+
+function animateRain(ctx, canvas) {
+  const drops = Array.from({ length: 100 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    speed: Math.random() * 3 + 2
+  }));
+
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(btn => {
+    btn.style.setProperty('background', 'linear-gradient(to bottom, #3498dbcc, rgb(203, 203, 203))', 'important');
+    btn.style.setProperty('color', 'white', 'important');
+    btn.style.boxShadow = '0 0 5px rgba(255,255,255,0.3)';
+    btn.style.transition = 'background 0.3s ease';
+  })
+
+  function draw() {
+    ctx.fillStyle = 'rgba(44, 62, 80, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = 'rgba(255,255,255, 0.3)';
+    ctx.lineWdith = 1; 
+
+    drops.forEach(drop => {
+      ctx.beginPath();
+      ctx.moveTo(drop.x, drop.y);
+      ctx.lineTo(drop.x, drop.y + 10);
+      ctx.stroke();
+
+      drop.y += drop.speed;
+      if (drop.y > canvas.height) {
+        drop.y = 0;
+        drop.x = Math.random() * canvas.width;
+      }
+    });
+
+    animationLoop = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+
 
