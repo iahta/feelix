@@ -3,6 +3,17 @@ import axios from 'https://cdn.skypack.dev/axios';
 let movieCache = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+  const email = sessionStorage.getItem('signupEmail') || '';
+  const password = sessionStorage.getItem('signupPassword') || '';
+
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+
+  if (emailInput && passwordInput) {
+    emailInput.value = email;
+    passwordInput.value = password;
+  }
+
   const signupForm = document.getElementById('signup-box');
   if (signupForm) {
     signupForm.addEventListener('submit', function(e) {
@@ -28,26 +39,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const loginVisibility = document.getElementById('login-form')
+  const loginVisibility = document.getElementById('login-form');
+  let actionType = 'login';
   if (loginVisibility) {
     document.getElementById('login-btn').addEventListener('click', () => {
-      actionType - 'login';
+      actionType = 'login';
     });
     document.getElementById('signup-btn').addEventListener('click', () => {
-      actionType - 'signup';
+      actionType = 'signup';
     });
 
     loginVisibility.addEventListener('submit', function(e) {
       e.preventDefault();
       if (actionType === 'signup') {
-        signup();//middle function or change singup depending on where your coming from. 
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        sessionStorage.setItem('signupEmail', email);
+        sessionStorage.setItem('signupPassword', password);
+        window.location.href = '/app/signup.html'
       } else {
         login();
       }
     });
     const token = localStorage.getItem('token');
     loginVisibility.style.display = token ? 'none' : 'block';
-  }
+  };
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -139,6 +155,8 @@ async function signup() {
           const data = await res.json();
           throw new Error(`Failed to create user: ${data.error}`);
       }
+      sessionStorage.removeItem('signupEmail');
+      sessionStorage.removeItem('signupPassword');
       console.log('User created!');
       await login();
   } catch (error) {
@@ -302,7 +320,7 @@ axios.interceptors.response.use(
       } catch (refreshError) {
         // If refresh fails, redirect to login
         //need to add acutal login location
-        window.location.href = '/login';
+        window.location.href = '/app/index.html';
         return Promise.reject(refreshError);
       }
     }
