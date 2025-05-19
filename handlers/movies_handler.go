@@ -35,6 +35,15 @@ type APIResponse struct {
 	Movies []Movies `json:"movies"`
 }
 
+type EnrichedMovie struct {
+	MovieID       int
+	Title         string
+	OriginalTitle string
+	Overview      string
+	ReleaseDate   string
+	StreamingUS   []StreamingOption
+}
+
 func SearchMovies(query string) ([]Movies, error) {
 	rapidKey := os.Getenv("RapidApiKey")
 	if rapidKey == "" {
@@ -245,8 +254,33 @@ func GetLikedMovies(cfg *config.ApiConfig) http.HandlerFunc {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to retrieve liked movies", err)
 			return
 		}
+
+		var enriched []EnrichedMovie
+		for _, movie := range movies {
+			streaming, err := GetStreamingOptions(movie.Imdb)
+			if err != nil {
+				utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get streaming options", err)
+				continue
+			}
+
+			usOptions := streaming.StreamingOptions["us"]
+
+			enriched = append(enriched, EnrichedMovie{
+				MovieID:       int(movie.MovieID),
+				Title:         movie.Title,
+				OriginalTitle: movie.OriginalTitle,
+				Overview:      movie.Overview,
+				ReleaseDate:   movie.ReleaseDate,
+				StreamingUS:   usOptions,
+			})
+
+		}
+		//get each movie streaming options
+		//build new struct that sends all info to populate streaming options on user
+		//send new encoded struct
+
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(movies)
+		json.NewEncoder(w).Encode(enriched)
 	}
 }
 

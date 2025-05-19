@@ -50,6 +50,18 @@ type Price struct {
 	Formatted string `json:"formatted"`
 }
 
+type StreamingInfo struct {
+	VerticalPoster map[string]string
+	ID             string
+	Name           string
+	StreamingLogo  string
+	Type           string
+}
+
+type StreamOptions struct {
+	Options StreamingInfo
+}
+
 func GetStreamingOptions(id string) (Show, error) {
 	rapidKey := os.Getenv("RapidApiKey")
 	if rapidKey == "" {

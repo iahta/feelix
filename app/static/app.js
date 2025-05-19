@@ -399,7 +399,8 @@ async function loadLikedMovies() {
         title: movie.Title,
         overview: movie.Overview,
         release_date: movie.ReleaseDate,
-        liked: true
+        liked: true,
+        streaming: movie.StreamingUS || []
     }));
     movieCache.forEach(renderMovie)
 
@@ -407,19 +408,38 @@ async function loadLikedMovies() {
 
   } catch (err) {
     console.error(err);
-    document.getElementById('movies-container').innerText = 'Could not retrieve liked movies.';
+    const container = document.getElementById('movies-container');
+    container.innerText = '<p style="color: red">Could not retrieve liked movies.</p>';
   }
 }
 
 function renderMovie(movie) {
   const container = document.getElementById('movies-container') || document.getElementById('results');
+  if (!container) {
+    console.error('No container element found to render movies.');
+    return;
+  }
   const movieEl = document.createElement('div');
   movieEl.className = 'movie';
+
+  let streamingHtml = '';
+  if (movie.liked && Array.isArray(movie.streaming) && movie.streaming.length > 0) {
+    streamingHtml = `<h4>Streaming Options:</h4><ul>`;
+    streamingHtml += movie.streaming.map(opt => `
+      <li>
+        <strong>${opt.service.name}</strong> (${opt.type})
+        <a href="${opt.link}" target="_blank">Watch</a>
+        ${opt.price ? ` - ${opt.price.formatted}` : ''}
+      </li>
+    `).join('');
+    streamingHtml += `</ul>`;
+  }
 
   movieEl.innerHTML = `
   <strong>${movie.title || movie.original_title}</strong><br>
   <small>${movie.release_date}</small><br>
   ${movie.overview}<br>
+  ${streamingHtml}
   <button class="${movie.liked ? 'unlike-btn' : 'like-btn'}" data-movie-id="${movie.id}">
   ${movie.liked ? 'Unlike' : 'Like'}
   </button>
