@@ -487,6 +487,7 @@ function applyMoodTheme(query) {
 
   switch (mood) {
     case 'sad': animateRain(ctx, canvas); break;
+    case 'angry': animateFire(ctx, canvas); break;
     default: break;
   }
 
@@ -540,5 +541,87 @@ function animateRain(ctx, canvas) {
   draw();
 }
 
+function animateFire(ctx, canvas) {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.setProperty('background', 'rgba(127, 0, 0, 0.42)');
+  document.body.style.setProperty('color', 'rgba(255, 148, 0, 1)', 'important');
 
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(btn => {
+    btn.style.setProperty('background', 'linear-gradient(to top, #ff4e50, #f9a123)', 'important');
+    btn.style.setProperty('color', 'white', 'important');
+    btn.style.boxShadow = '0 0 5px rgba(255,255,255,0.3)';
+    btn.style.transition = 'background 0.3s ease';
+  })
 
+  let particles = [];
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = canvas.height + Math.random() * 100;
+      this.radius = Math.random() * 40 + 10;
+      this.speedY = Math.random() * -1.5 - 0.5;
+      this.life = 100;
+      this.alpha = 1;
+    }
+
+    update() {
+      this.y += this.speedY;
+      this.alpha -= 0.01;
+      this.life--;
+      if (this.life <= 0 || this.alpha <= 0) {
+        this.reset();
+      }
+    }
+
+    draw(){
+      const gradient = ctx.createRadialGradient(
+        this.x, this.y, 0,
+        this.x, this.y, this.radius
+      );
+
+      gradient.addColorStop(0, `rgba(255, 255, 200, ${this.alpha})`);
+      gradient.addColorStop(0.2, `rgba(255, 165, 0, ${this.alpha})`);
+      gradient.addColorStop(0.4, `rgba(255, 69, 0, ${this.alpha * 0.8})`);
+      gradient.addColorStop(1, `rgba(0, 0, 0, 0)`);
+
+      ctx.beginPath();
+      ctx.fillStyle = gradient;
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initFire() {
+    particles = [];
+    for (let i = 0; i < 200; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  initFire();
+  animate();
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+}
