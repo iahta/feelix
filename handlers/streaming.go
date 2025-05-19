@@ -50,18 +50,6 @@ type Price struct {
 	Formatted string `json:"formatted"`
 }
 
-type StreamingInfo struct {
-	VerticalPoster map[string]string
-	ID             string
-	Name           string
-	StreamingLogo  string
-	Type           string
-}
-
-type StreamOptions struct {
-	Options StreamingInfo
-}
-
 func GetStreamingOptions(id string) (Show, error) {
 	rapidKey := os.Getenv("RapidApiKey")
 	if rapidKey == "" {
@@ -92,11 +80,6 @@ func GetStreamingOptions(id string) (Show, error) {
 	err = json.NewDecoder(res.Body).Decode(&result)
 	if err != nil {
 		return Show{}, err
-	}
-	//have to iterate over the options to get them.
-	for _, option := range result.StreamingOptions["us"] {
-		fmt.Println(option.Type)
-		fmt.Println(option.Service.Name)
 	}
 
 	return result, nil

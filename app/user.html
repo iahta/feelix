@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>User Profile</title>
   <script type="module" src="/app/static/app.js"></script>
+  <link rel="stylesheet" href="/app/static/styles.css">
 </head>
 <body>
   <h1>User Profile</h1>
@@ -15,6 +16,7 @@
       <label>New Password: <input type="password" id="password" /></label><br />
       <label>Confirm Password: <input type="password" id="confirm_password" /></label><br />
       <button type="submit">Update Info</button>
+      <button id="logout-button">Logout</button>
     </form>
   </section>
 
@@ -23,6 +25,5 @@
     <div id="movies-container">Loading...</div>
   </section>
 
-  <button id="logout-button">Logout</button>
 </body>
 </html>

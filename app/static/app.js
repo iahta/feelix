@@ -77,6 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+  const userHomeButton = document.getElementById('user-button');
+  if (userHomeButton) {
+    userHomeButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/app/user.html';
+    });
+  }
+}); 
+
+document.addEventListener('DOMContentLoaded', () => {
   const searchButton = document.getElementById('search-button');
   if (searchButton) {
     searchButton.addEventListener('click', (e) => {
@@ -409,7 +419,7 @@ async function loadLikedMovies() {
   } catch (err) {
     console.error(err);
     const container = document.getElementById('movies-container');
-    container.innerText = '<p style="color: red">Could not retrieve liked movies.</p>';
+    container.innerHTML = '<p style="color: red">Could not retrieve liked movies.</p>';
   }
 }
 
@@ -427,8 +437,8 @@ function renderMovie(movie) {
     streamingHtml = `<h4>Streaming Options:</h4><ul>`;
     streamingHtml += movie.streaming.map(opt => `
       <li>
-        <strong>${opt.service.name}</strong> (${opt.type})
-        <a href="${opt.link}" target="_blank">Watch</a>
+        <a href="${opt.link}"><img src="${opt.service.imageSet.lightThemeImage}" alt="${opt.service.name} logo" style="height: 24px;"></a>
+        (${opt.type})
         ${opt.price ? ` - ${opt.price.formatted}` : ''}
       </li>
     `).join('');
