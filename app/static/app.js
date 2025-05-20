@@ -224,11 +224,55 @@ function searchMovies() {
 
     data.forEach(renderMovie);
 
+    slideMovies();
+
     bindLikeButtons();
 
     applyMoodTheme(query);
   })
   .catch(err => alert("Error: " + err.message));
+}
+
+var slideIndex = 1;
+function slideMovies() {
+  const container = document.getElementById('results');
+  const buttons = `<button class"w3-button w3-display-left" id="btn-left">&#10094;</button>
+                  <button class"w3-button w3-display-right" id="btn-right">&#10095;</button>`;
+  const channels = document.createElement('scroll-buttons');
+  channels.innerHTML = buttons
+  container.appendChild(channels);
+  showDivs(slideIndex);
+  bindScrollButtons();
+
+}
+
+function bindScrollButtons() {
+  const leftButton = document.getElementById('btn-left')
+  leftButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    plusDivs(-1);
+  });
+  
+  const rightButton = document.getElementById('btn-right')
+  rightButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    plusDivs(1);
+  });
+}
+
+function plusDivs(n) {
+  showDivs(slideIndex += n);
+}
+
+function showDivs(n) {
+  var i;
+  var x = document.getElementsByClassName('movie');
+  if (n > x.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = x.length};
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+  x[slideIndex-1].style.display = "block";
 }
 
 async function unlikeMovie(id) {
@@ -377,7 +421,7 @@ async function loadLikedMovies() {
   const token = localStorage.getItem('token');
   if (!token) {
     alert('You must be logged in to view liked movies.');
-    window.location.href = '/app/login.html';
+    window.location.href = '/app/index.html';
     return;
   }
 
@@ -613,7 +657,7 @@ function animateFire(ctx, canvas) {
       p.draw();
     });
 
-    requestAnimationFrame(animate);
+    animationLoop = requestAnimationFrame(animate);
   }
 
   initFire();
