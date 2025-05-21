@@ -134,7 +134,7 @@ func SearchMoviesHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		if err == nil {
 			userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
 			if err != nil {
-				utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+				utils.RespondWithError(w, http.StatusUnauthorized, "Invalid Credentials", err)
 				return
 			}
 			likedMovies, err := cfg.Database.RetrieveMoviesByUser(r.Context(), userID)
@@ -167,7 +167,7 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 		}
 		userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid Credentials", err)
 			return
 		}
 		err = json.NewDecoder(r.Body).Decode(&movie)
@@ -212,7 +212,7 @@ func UnlikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 		}
 		userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid Credentials", err)
 			return
 		}
 		if r.Body == nil {
@@ -246,7 +246,7 @@ func GetLikedMovies(cfg *config.ApiConfig) http.HandlerFunc {
 		}
 		userID, err := auth.ValidateJWT(authHeader, cfg.JWTSecret)
 		if err != nil {
-			utils.RespondWithError(w, http.StatusForbidden, "Invalid Credentials", err)
+			utils.RespondWithError(w, http.StatusUnauthorized, "Invalid Credentials", err)
 			return
 		}
 		movies, err := cfg.Database.RetrieveMoviesByUser(r.Context(), userID)

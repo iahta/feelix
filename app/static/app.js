@@ -1,5 +1,3 @@
-import axios from 'https://cdn.skypack.dev/axios';
-
 let movieCache = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -118,6 +116,53 @@ document.addEventListener('DOMContentLoaded', () => {
 })
 
 
+//test more with fetch
+async function fetchWithAuth(url, options = {}) {
+  const accessToken = localStorage.getItem('token');
+  const headers = {
+    ...options.headers,
+    'Authorization': `Bearer ${accessToken}`,
+    'Content-Type': 'application/json'
+  };
+
+  const response = await fetch(url, {...options, headers});
+
+  if (response.status === 401) {
+    const refreshSuccess = await tryRefreshToken();
+    if (refreshSuccess) {
+      const newAccessToken = localStorage.getItem('token');
+      headers['Authorization'] = `Bearer ${newAccessToken}`;
+      return await fetch(url, { ...options, headers });
+    } else {
+      window.location.href = '/app/index.html';
+    }
+  }
+  return response;   
+}
+
+async function tryRefreshToken() {
+  const refreshToken = localStorage.getItem('refresh_token');
+  try {
+      const res = await fetch('/api/refresh', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${refreshToken}`
+          }
+      });
+
+      if (res.ok) {
+          const refreshData = await res.json();
+          localStorage.setItem('token', refreshData.token);
+          return true;
+      }
+  } catch (err) {
+      console.error('Refresh token failed', err);
+  }
+  return false;
+}
+
+
 async function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -204,7 +249,7 @@ function searchMovies() {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  fetch (`/api/search?q=${encodeURIComponent(query)}`, {
+  fetchWithAuth (`/api/search?q=${encodeURIComponent(query)}`, {
     method: 'GET',
     headers: headers
   })
@@ -357,43 +402,6 @@ function likeMovie(id) {
     .catch(err => alert("Error liking movie: " + err.message));
 }
 
-//refresh handler, javascript, when 401 calls
-// Set up an interceptor to handle 401 responses
-axios.interceptors.response.use(
-  response => response,
-  async error => {
-    const originalRequest = error.config;
-    
-    // If it's a 401 and we haven't tried refreshing yet
-    if (error.response.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        // Call the refresh endpoint
-        const response = await axios.post('/api/refresh', {}, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('refresh_token')}`
-          }
-        });
-        
-        // Update the stored JWT
-        const newToken = response.data.token;
-        localStorage.setItem('token', newToken);
-        
-        // Retry the original request with the new token
-        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-        return axios(originalRequest);
-      } catch (refreshError) {
-        // If refresh fails, redirect to login
-        //need to add acutal login location
-        window.location.href = '/app/index.html';
-        return Promise.reject(refreshError);
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
 
 async function logout() {
   try {
