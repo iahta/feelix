@@ -132,6 +132,7 @@ async function fetchWithAuth(url, options = {}) {
     if (refreshSuccess) {
       const newAccessToken = localStorage.getItem('token');
       headers['Authorization'] = `Bearer ${newAccessToken}`;
+      //refresh// fetch doesnt work. 
       return await fetch(url, { ...options, headers });
     } else {
       window.location.href = '/app/index.html';
@@ -534,12 +535,21 @@ function applyMoodTheme(query) {
   const ctx = canvas.getContext('2d');
   const mood = getMoodFromQuery(query);
 
-  cancelAnimationFrame(animationLoop);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+  function resetCanvas(ctx, canvas) {
+    cancelAnimationFrame(animationLoop);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.globalAlpha = 1;
+    canvas.style.background = '';
+  }
+  resetCanvas(ctx, canvas);
+  
   switch (mood) {
     case 'sad': animateRain(ctx, canvas); break;
     case 'angry': animateFire(ctx, canvas); break;
+    case 'happy': animateBeach(ctx, canvas); break;
     default: break;
   }
 
@@ -676,4 +686,136 @@ function animateFire(ctx, canvas) {
     canvas.height = window.innerHeight;
   });
 
+}
+
+function animateBeach(ctx, canvas) {
+  let startTime = null;
+// Helper to draw a gradient rectangle
+  function drawGradientRect(x, y, width, height, colorStops, vertical = true) {
+    const gradient = vertical
+      ? ctx.createLinearGradient(x, y, x, y + height)
+      : ctx.createLinearGradient(x, y, x + width, y);
+
+    for (const [offset, color] of colorStops) {
+      gradient.addColorStop(offset, color);
+    }
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x, y, width, height);
+  }
+
+  // Draw the sky
+  function drawSky() {
+    drawGradientRect(0, 0, canvas.width, canvas.height * 0.4, [
+      [0, '#037ccb'],
+      [1, '#82ccef']
+    ]);
+  }
+
+  // Draw the sea (semi-circle / wave shape)
+  function drawSea(scaleY = 1) {
+    const seaY = canvas.height * 0.4;
+    const seaHeight = canvas.height * 0.3;
+    const radiusX = canvas.width;
+    const radiusY = seaHeight * scaleY;
+
+    const gradient = ctx.createLinearGradient(0, seaY, 0, seaY + seaHeight);
+    gradient.addColorStop(0, 'rgba(8, 122, 193, 1)');
+    gradient.addColorStop(0.25, 'rgba(18, 156, 192, 1)');
+    gradient.addColorStop(0.5, 'rgba(42, 212, 229, 1)');
+    gradient.addColorStop(0.75, 'rgba(150, 233, 239, 1)');
+    gradient.addColorStop(1, 'rgba(222, 236, 211, 1)');
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    ctx.ellipse(canvas.width / 2, seaY, radiusX, radiusY, 0, 0, Math.PI);
+    ctx.lineTo(0, seaY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Draw wet sand (similar shape to sea)
+  function drawWetSand() {
+    const y = canvas.height * 0.55;
+    const height = canvas.height * 0.25;
+    ctx.fillStyle = '#ecc075';
+    ctx.beginPath();
+    ctx.ellipse(canvas.width / 2, y, canvas.width, height, 0, 0, Math.PI);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.shadowColor = '#ecc075';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 10;
+  }
+
+  // Draw dry sand
+  function drawSand() {
+    const y = canvas.height * 0.65;
+    const height = canvas.height * 0.35;
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fdf1d7';
+    ctx.fillRect(0, y, canvas.width, height);
+  }
+
+  // Draw palm tree trunk
+  function drawTrunk() {
+    ctx.fillStyle = '#aa8366';
+    const x = canvas.width / 2 - 15;
+    const y = canvas.height * 0.35;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 30, y - 100);
+    ctx.lineTo(x + 45, y - 100);
+    ctx.lineTo(x + 15, y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Draw a leaf
+  function drawLeaf(x, y, angle, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 100, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Draw palm leaves
+  function drawLeaves() {
+    const x = canvas.width / 2 + 10;
+    const y = canvas.height * 0.25;
+    drawLeaf(x, y, -0.3, '#395d00');
+    drawLeaf(x, y, 0.2, '#5c7301');
+    drawLeaf(x, y, -0.5, '#465a05');
+  }
+
+  // Full draw
+  function drawScene(timeElapsed) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const waveScale = 1 + 0.3 * Math.sin(timeElapsed / 1000 * Math.PI * 2);
+    drawSky();
+    drawSea(waveScale);
+    drawWetSand();
+    drawSand();
+    drawTrunk();
+    drawLeaves();
+  }
+
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    const timeElapsed = timestamp - startTime;
+
+    drawScene(timeElapsed);
+    animationLoop = requestAnimationFrame(animate);
+  }
+  animationLoop = requestAnimationFrame(animate);
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
 }
