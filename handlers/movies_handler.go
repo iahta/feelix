@@ -182,17 +182,18 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		if movie.ID > math.MaxInt32 || movie.ID < math.MinInt32 {
+		movieID, err := safeIntToInt32(movie.ID)
+		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to convert ID", nil)
 			return
 		}
-		if movieImdb.Tmdb > math.MaxInt32 || movieImdb.Tmdb < math.MinInt32 {
+		movieTmdb, err := safeIntToInt32(movieImdb.Tmdb)
+		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to convert TMDBID", nil)
 			return
 		}
-
 		_, err = cfg.Database.LikedMovie(r.Context(), database.LikedMovieParams{
-			MovieID:       int32(movie.ID),
+			MovieID:       movieID,
 			OriginalTitle: movie.OriginalTitle,
 			Title:         movie.Title,
 			Overview:      movie.Overview,
@@ -200,9 +201,10 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 			PosterPath:    movie.PosterPath,
 			VoteAverage:   movie.VoteAverage,
 			Imdb:          movieImdb.Imdb,
-			Tmdb:          int32(movieImdb.Tmdb),
+			Tmdb:          movieTmdb,
 			UserID:        userID,
 		})
+
 		if err != nil {
 			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to save movie", err)
 			return
@@ -236,13 +238,14 @@ func UnlikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		if moviePayload.ID > math.MaxInt32 || moviePayload.ID < math.MinInt32 {
-			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to convert ID", nil)
+		movieID, err := safeIntToInt32(moviePayload.ID)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "Unable to convert ID", err)
 			return
 		}
 
 		err = cfg.Database.UnlikeMovie(r.Context(), database.UnlikeMovieParams{
-			MovieID: int32(moviePayload.ID),
+			MovieID: movieID,
 			UserID:  userID,
 		})
 		if err != nil {
@@ -298,6 +301,13 @@ func GetLikedMovies(cfg *config.ApiConfig) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(enriched)
 	}
+}
+
+func safeIntToInt32(i int) (int32, error) {
+	if i > math.MaxInt32 || i < math.MinInt32 {
+		return 0, fmt.Errorf("value %d out of int 32 range", i)
+	}
+	return int32(i), nil
 }
 
 //make refresh tokens
