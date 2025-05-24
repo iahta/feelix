@@ -43,10 +43,10 @@ func NewApiConfig() (*ApiConfig, error) {
 		return nil, fmt.Errorf("error retrieving database")
 	}
 	if JWT_Secret == "" {
-		return nil, fmt.Errorf("JWT_SECRET must be set")
+		return nil, fmt.Errorf("authorization key must be set")
 	}
 	if Platform == "" {
-		return nil, fmt.Errorf("Platform must be set")
+		return nil, fmt.Errorf("platform must be set")
 	}
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
