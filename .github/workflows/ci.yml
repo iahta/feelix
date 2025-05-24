@@ -25,7 +25,7 @@ jobs:
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
       - name: Test gosec
-        run: gosec -conf .gosec.json ./...
+        run: gosec -exclude-generated ./...
   
   style:
     name: Style
