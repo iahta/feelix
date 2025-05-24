@@ -713,11 +713,12 @@ function animateBeach(ctx, canvas) {
   }
 
   // Draw the sea (semi-circle / wave shape)
-  function drawSea(scaleY = 1) {
-    const seaY = canvas.height * 0.4;
+  function drawSea(offsetY = 1) {
+    const baseSeaY = canvas.height * 0.4;
+    const seaY = baseSeaY + offsetY;
     const seaHeight = canvas.height * 0.3;
     const radiusX = canvas.width;
-    const radiusY = seaHeight * scaleY;
+    const radiusY = seaHeight;
 
     const gradient = ctx.createLinearGradient(0, seaY, 0, seaY + seaHeight);
     gradient.addColorStop(0, 'rgba(8, 122, 193, 1)');
@@ -728,7 +729,7 @@ function animateBeach(ctx, canvas) {
     ctx.fillStyle = gradient;
 
     ctx.beginPath();
-    ctx.ellipse(canvas.width / 2, seaY, radiusX, radiusY, 0, 0, Math.PI);
+    ctx.ellipse(canvas.width / 2, seaY, radiusX, radiusY, 0, Math.PI, 0, true);
     ctx.lineTo(0, seaY);
     ctx.closePath();
     ctx.fill();
@@ -796,9 +797,9 @@ function animateBeach(ctx, canvas) {
   // Full draw
   function drawScene(timeElapsed) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const waveScale = 1 + 0.3 * Math.sin(timeElapsed / 1000 * Math.PI * 2);
+    const waveOffsetY = Math.sin(timeElapsed / 1000 * Math.PI * 2) * 20;
     drawSky();
-    drawSea(waveScale);
+    drawSea(waveOffsetY);
     drawWetSand();
     drawSand();
     drawTrunk();
