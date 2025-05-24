@@ -182,9 +182,12 @@ func LikeMovie(cfg *config.ApiConfig) http.HandlerFunc {
 			return
 		}
 
-		err = overflowCheck(movie.ID, movieImdb.Tmdb)
-		if err != nil {
-			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to convert id", err)
+		if movie.ID > math.MaxInt32 || movie.ID < math.MinInt32 {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to convert ID", nil)
+			return
+		}
+		if movieImdb.Tmdb > math.MaxInt32 || movieImdb.Tmdb < math.MinInt32 {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable to convert TMDBID", nil)
 			return
 		}
 
@@ -295,16 +298,6 @@ func GetLikedMovies(cfg *config.ApiConfig) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(enriched)
 	}
-}
-
-func overflowCheck(movieId, tmdbId int) error {
-	if movieId > math.MaxInt32 || movieId < math.MinInt32 {
-		return fmt.Errorf("movie ID %d is out of int32 range", movieId)
-	}
-	if tmdbId > math.MaxInt32 || tmdbId < math.MinInt32 {
-		return fmt.Errorf("TMDB ID %d is out of int32 range", tmdbId)
-	}
-	return nil
 }
 
 //make refresh tokens
