@@ -20,8 +20,11 @@ WHERE email = $1;
 SELECT * FROM users
 WHERE id = $1;
 
+
+-- #nosec G101 -- false positive: SQL uses parameterized inputs, no hardcoded credentials
 -- name: UpdatePasswordEmailUser :one
 UPDATE users
 SET email = $1, password_hash = $2, updated_at = $3
 WHERE id = $4
 RETURNING id, created_at, updated_at, email;
+
