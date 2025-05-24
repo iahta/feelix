@@ -1,5 +1,5 @@
 {
     "exclude": ["G101"],
-    "excludePaths": ["internal/database/*.sql.go"]
+    "excludePaths": ["./internal/database/*.sql.go"]
   }
   
