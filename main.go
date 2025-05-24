@@ -15,8 +15,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ok := []byte("OK")
-
 	mux := http.NewServeMux()
 	appHandler := http.StripPrefix("/app", http.FileServer(http.Dir("./app")))
 	mux.Handle("/app/", appHandler)
@@ -29,12 +27,6 @@ func main() {
 	mux.HandleFunc("POST /api/reset", handlers.ResetHandler(cfg))
 	mux.HandleFunc("GET /api/user/likes", handlers.GetLikedMovies(cfg))
 	mux.HandleFunc("DELETE /api/unlike", handlers.UnlikeMovie(cfg))
-
-	mux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		w.Write(ok)
-	})
 
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,

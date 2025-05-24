@@ -153,7 +153,11 @@ func SearchMoviesHandler(cfg *config.ApiConfig) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(movies)
+		err = json.NewEncoder(w).Encode(movies)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable encode json", err)
+			return
+		}
 	}
 }
 
@@ -299,7 +303,11 @@ func GetLikedMovies(cfg *config.ApiConfig) http.HandlerFunc {
 		//send new encoded struct
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(enriched)
+		err = json.NewEncoder(w).Encode(enriched)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "Unable encode json", err)
+			return
+		}
 	}
 }
 
