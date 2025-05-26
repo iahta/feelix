@@ -690,7 +690,16 @@ function animateFire(ctx, canvas) {
 
 function animateBeach(ctx, canvas) {
   let startTime = null;
-// Helper to draw a gradient rectangle
+  document.body.style.setProperty('color', 'rgba(0, 0, 255, 0.99)', 'important');
+
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(btn => {
+    btn.style.setProperty('background', 'linear-gradient(to top,rgb(255, 254, 191),rgb(84, 214, 250))', 'important');
+    btn.style.setProperty('color', 'white', 'important');
+    btn.style.boxShadow = '0 0 5px rgba(255,255,255,0.3)';
+    btn.style.transition = 'background 0.3s ease';
+  })
+
   function drawGradientRect(x, y, width, height, colorStops, vertical = true) {
     const gradient = vertical
       ? ctx.createLinearGradient(x, y, x, y + height)
@@ -714,10 +723,10 @@ function animateBeach(ctx, canvas) {
   function drawSea(offsetY = 0) {
     const baseSeaY = canvas.height * 0.55;
     const seaY = baseSeaY + offsetY;
-    const radiusX = canvas.width;
+    const radiusX = canvas.width / 2;
     const radiusY = canvas.height * 0.465;
 
-    const gradient = ctx.createLinearGradient(0, seaY- radiusY, 0, seaY);
+    const gradient = ctx.createLinearGradient(0, seaY - radiusY, 0, seaY);
     gradient.addColorStop(0, 'rgba(8, 122, 193, 1)');
     gradient.addColorStop(0.25, 'rgba(18, 156, 192, 1)');
     gradient.addColorStop(0.5, 'rgba(42, 212, 229, 1)');
@@ -757,7 +766,7 @@ function animateBeach(ctx, canvas) {
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + 90, y - 500);
-    ctx.lineTo(x + 110, y - 100);
+    ctx.lineTo(x + 110, y - 500);
     ctx.lineTo(x + 30, y);
     ctx.closePath();
     ctx.fill();
@@ -789,8 +798,8 @@ function animateBeach(ctx, canvas) {
     drawWetSand();
     drawSea(waveOffsetY);
     drawSky();
-    drawTrunk();
-    drawLeaves();
+    //drawTrunk();
+    //drawLeaves();
   }
 
   function animate(timestamp) {

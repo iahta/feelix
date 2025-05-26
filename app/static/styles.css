@@ -4,26 +4,10 @@ body, html {
     font-family: 'Segoe UI', sans-serif;
     height: 100%;
     color: #f1f1f1;
-    background: #000; /* Dark for cinematic effect */
+    background: #000;
     overflow-x: hidden;
     overflow-y: auto;
     position: relative;
-  }
-
-  body.theme-sad {
-    background: linear-gradient(to bottom, #2c3e50, #34495e);
-  }
-  
-  body.theme-happy {
-    background: linear-gradient(to bottom, #f1c40f, #f39c12);
-  }
-  
-  body.theme-angry {
-    background: linear-gradient(to bottom, #c0392b, #8e0e00);
-  }
-  
-  body.theme-calm {
-    background: linear-gradient(to bottom, #2980b9, #6dd5fa);
   }
   
   
