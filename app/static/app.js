@@ -704,7 +704,6 @@ function animateBeach(ctx, canvas) {
     ctx.fillRect(x, y, width, height);
   }
 
-  // Draw the sky
   function drawSky() {
     drawGradientRect(0, 0, canvas.width, canvas.height * 0.4, [
       [0, '#037ccb'],
@@ -712,15 +711,13 @@ function animateBeach(ctx, canvas) {
     ]);
   }
 
-  // Draw the sea (semi-circle / wave shape)
-  function drawSea(offsetY = 1) {
-    const baseSeaY = canvas.height * 0.4;
+  function drawSea(offsetY = 0) {
+    const baseSeaY = canvas.height * 0.55;
     const seaY = baseSeaY + offsetY;
-    const seaHeight = canvas.height * 0.3;
     const radiusX = canvas.width;
-    const radiusY = seaHeight;
+    const radiusY = canvas.height * 0.465;
 
-    const gradient = ctx.createLinearGradient(0, seaY, 0, seaY + seaHeight);
+    const gradient = ctx.createLinearGradient(0, seaY- radiusY, 0, seaY);
     gradient.addColorStop(0, 'rgba(8, 122, 193, 1)');
     gradient.addColorStop(0.25, 'rgba(18, 156, 192, 1)');
     gradient.addColorStop(0.5, 'rgba(42, 212, 229, 1)');
@@ -729,51 +726,43 @@ function animateBeach(ctx, canvas) {
     ctx.fillStyle = gradient;
 
     ctx.beginPath();
-    ctx.ellipse(canvas.width / 2, seaY, radiusX, radiusY, 0, Math.PI, 0, true);
-    ctx.lineTo(0, seaY);
+    ctx.ellipse(canvas.width / 2, seaY, radiusX * 2, radiusY / 1.55, 0, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.fill();
   }
 
-  // Draw wet sand (similar shape to sea)
   function drawWetSand() {
-    const y = canvas.height * 0.55;
-    const height = canvas.height * 0.25;
+    const y = canvas.height * 0.70;
+    const height = canvas.height * 0.21;
     ctx.fillStyle = '#ecc075';
     ctx.beginPath();
-    ctx.ellipse(canvas.width / 2, y, canvas.width, height, 0, 0, Math.PI);
+    ctx.ellipse(canvas.width / 2, y, canvas.width, height, 0, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.fill();
 
-    ctx.shadowColor = '#ecc075';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetY = 10;
   }
 
-  // Draw dry sand
   function drawSand() {
     const y = canvas.height * 0.65;
-    const height = canvas.height * 0.35;
+    const height = canvas.height * 0.55;
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#fdf1d7';
     ctx.fillRect(0, y, canvas.width, height);
   }
 
-  // Draw palm tree trunk
   function drawTrunk() {
     ctx.fillStyle = '#aa8366';
-    const x = canvas.width / 2 - 15;
-    const y = canvas.height * 0.35;
+    const x = canvas.width / 10.5;
+    const y = canvas.height * 0.95;
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineTo(x + 30, y - 100);
-    ctx.lineTo(x + 45, y - 100);
-    ctx.lineTo(x + 15, y);
+    ctx.lineTo(x + 90, y - 500);
+    ctx.lineTo(x + 110, y - 100);
+    ctx.lineTo(x + 30, y);
     ctx.closePath();
     ctx.fill();
   }
 
-  // Draw a leaf
   function drawLeaf(x, y, angle, color) {
     ctx.save();
     ctx.translate(x, y);
@@ -785,23 +774,21 @@ function animateBeach(ctx, canvas) {
     ctx.restore();
   }
 
-  // Draw palm leaves
   function drawLeaves() {
-    const x = canvas.width / 2 + 10;
-    const y = canvas.height * 0.25;
+    const x = canvas.width / 4.8;
+    const y = canvas.height * 0.30;
     drawLeaf(x, y, -0.3, '#395d00');
     drawLeaf(x, y, 0.2, '#5c7301');
     drawLeaf(x, y, -0.5, '#465a05');
   }
 
-  // Full draw
   function drawScene(timeElapsed) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const waveOffsetY = Math.sin(timeElapsed / 1000 * Math.PI * 2) * 20;
-    drawSky();
-    drawSea(waveOffsetY);
-    drawWetSand();
+    const waveOffsetY = Math.sin((timeElapsed / 8000) * Math.PI * 2) * 60;
     drawSand();
+    drawWetSand();
+    drawSea(waveOffsetY);
+    drawSky();
     drawTrunk();
     drawLeaves();
   }
